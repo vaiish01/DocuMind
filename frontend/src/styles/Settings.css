@@ -1,0 +1,276 @@
+
+/* SETTINGS PAGE */
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.settings-card {
+  background: #FFFFFF;
+  border: 1px solid #ECEAF2;
+  border-radius: 15px;
+  padding: 23px;
+  min-width: 0;
+  box-shadow: 0 3px 14px rgba(57, 54, 75, 0.025);
+}
+
+.settings-title {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 23px;
+}
+
+.settings-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #F0ECFA;
+  color: #8973D5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.settings-title h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #39364B;
+}
+
+.settings-title p {
+  font-size: 11px;
+  color: #9691A5;
+  margin-top: 4px;
+}
+
+.settings-profile {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px;
+  background: #FAF9FD;
+  border-radius: 11px;
+  margin-bottom: 22px;
+}
+
+.settings-avatar {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  background: #E9E2FA;
+  color: #735AC2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.settings-profile strong,
+.settings-profile span {
+  display: block;
+}
+
+.settings-profile strong {
+  font-size: 13px;
+}
+
+.settings-profile span {
+  color: #9691A5;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.settings-field {
+  display: block;
+  color: #514D63;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 17px;
+}
+
+.settings-field > input,
+.settings-input-icon {
+  width: 100%;
+  height: 42px;
+  margin-top: 8px;
+  border: 1px solid #ECEAF2;
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+
+.settings-field > input {
+  padding: 0 12px;
+  font-size: 12px;
+  color: #39364B;
+}
+
+.settings-input-icon {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  color: #9691A5;
+}
+
+.settings-input-icon input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  color: #39364B;
+  font-size: 12px;
+  background: transparent;
+}
+
+.settings-field input:focus {
+  border-color: #8973D5;
+}
+
+.setting-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 17px 0;
+  border-bottom: 1px solid #F0EEF4;
+}
+
+.setting-toggle-row:last-child {
+  border-bottom: none;
+}
+
+.setting-toggle-row strong {
+  font-size: 12px;
+  color: #39364B;
+}
+
+.setting-toggle-row p {
+  font-size: 10px;
+  color: #9691A5;
+  margin-top: 5px;
+}
+
+.setting-toggle-row input {
+  width: 17px;
+  height: 17px;
+  accent-color: #8973D5;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.appearance-option {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px;
+  border: 1px solid #DDD4F4;
+  border-radius: 11px;
+  background: #FAF9FD;
+}
+
+.appearance-preview {
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  background: #FFFFFF;
+  border: 1px solid #ECEAF2;
+  border-radius: 7px;
+}
+
+.appearance-preview div {
+  width: 13px;
+  height: 27px;
+  border-radius: 3px;
+  background: #F0ECFA;
+}
+
+.appearance-preview div:nth-child(2) {
+  background: #8973D5;
+}
+
+.appearance-preview div:nth-child(3) {
+  background: #E9E5F3;
+}
+
+.appearance-option strong {
+  font-size: 12px;
+}
+
+.appearance-option p {
+  font-size: 10px;
+  color: #9691A5;
+  margin-top: 4px;
+}
+
+.selected-label {
+  margin-left: auto;
+  color: #735AC2;
+  background: #F0ECFA;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.privacy-info {
+  display: flex;
+  gap: 12px;
+  padding: 15px;
+  background: #FAF9FD;
+  border-radius: 10px;
+  color: #8973D5;
+}
+
+.privacy-info svg {
+  flex-shrink: 0;
+}
+
+.privacy-info strong {
+  font-size: 12px;
+  color: #39364B;
+}
+
+.privacy-info p {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #9691A5;
+  margin-top: 6px;
+}
+
+.settings-success {
+  grid-column: 1 / -1;
+  padding: 12px 15px;
+  border-radius: 8px;
+  background: #EAF7EF;
+  color: #287A4A;
+  font-size: 11px;
+}
+
+.settings-save {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 850px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .settings-card {
+    padding: 17px;
+  }
+
+  .appearance-option {
+    flex-wrap: wrap;
+  }
+}
