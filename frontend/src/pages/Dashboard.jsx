@@ -1,5 +1,5 @@
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import {
   Upload,
@@ -13,98 +13,142 @@ import {
   MoreHorizontal,
   Clock3,
   Sparkles,
-  Plus,
   Search,
   CheckCircle2
 } from 'lucide-react';
 
 import '../styles/Dashboard.css';
 
-const initialDocuments = [
-  {
-    id: 1,
-    name: 'Java Programming Notes.pdf',
-    type: 'PDF',
-    size: '2.4 MB',
-    date: 'Today',
-    color: 'purple'
-  },
-  {
-    id: 2,
-    name: 'Database Management.docx',
-    type: 'DOCX',
-    size: '1.8 MB',
-    date: 'Yesterday',
-    color: 'blue'
-  },
-  {
-    id: 3,
-    name: 'Machine Learning Basics.pdf',
-    type: 'PDF',
-    size: '3.2 MB',
-    date: 'Oct 28, 2026',
-    color: 'orange'
-  },
-  {
-    id: 4,
-    name: 'Web Development Notes.txt',
-    type: 'TXT',
-    size: '450 KB',
-    date: 'Oct 26, 2026',
-    color: 'green'
+import {
+  getDocuments,
+  uploadDocument,
+  getDashboardStats
+} from '../services/documentService';
+
+function formatFileSize(bytes) {
+  if (!bytes) return '0 KB';
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(0)} KB`;
   }
-];
+
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function formatDate(date) {
+  if (!date) return 'Recently';
+
+  const uploadedDate = new Date(date);
+
+  if (Number.isNaN(uploadedDate.getTime())) {
+    return 'Recently';
+  }
+
+  return uploadedDate.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+function mapDocument(document, index) {
+  const filename =
+    document.originalFilename || document.title || 'Untitled';
+
+  const extension = filename.split('.').pop().toUpperCase();
+
+  const colors = ['purple', 'blue', 'orange', 'green'];
+
+  return {
+    id: document.id,
+    name: document.title || filename,
+    type: extension,
+    size: formatFileSize(document.fileSize),
+    date: formatDate(document.uploadedAt),
+    color: colors[index % colors.length]
+  };
+}
 
 function Dashboard() {
-  const [documents, setDocuments] = useState(initialDocuments);
+  const [documents, setDocuments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [message, setMessage] = useState('');
-  const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
-  const handleUpload = (event) => {
+  const fileInputRef = useRef(null);
+  const [stats, setStats] = useState({
+  totalDocuments: 0,
+  aiConversations: 0,
+  studySessions: 0
+});
+  // Fetch actual documents from PostgreSQL.
+  const loadDocuments = async () => {
+  try {
+    const [documentsData, statsData] = await Promise.all([
+      getDocuments(),
+      getDashboardStats()
+    ]);
+
+    const mappedDocuments = documentsData.map(mapDocument);
+
+    setDocuments(mappedDocuments);
+    setStats(statsData);
+
+  } catch (error) {
+    setMessage(error.message || 'Unable to load dashboard data.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  useEffect(() => {
+    loadDocuments();
+  }, []);
+
+  // Upload documents through Spring Boot.
+  const handleUpload = async (event) => {
     const files = Array.from(event.target.files || []);
+
+    event.target.value = '';
 
     if (!files.length) return;
 
     const allowedExtensions = ['pdf', 'docx', 'txt'];
 
-    const validFiles = files.filter((file) => {
+    const validFiles = files.filter(file => {
       const extension = file.name.split('.').pop().toLowerCase();
       return allowedExtensions.includes(extension);
     });
 
-    if (!validFiles.length) {
-      setMessage('Please select a PDF, DOCX or TXT file.');
-      event.target.value = '';
-      return;
+    if (validFiles.length !== files.length) {
+      setMessage('Only PDF, DOCX and TXT files are supported.');
+    } else {
+      setMessage('');
     }
 
-    const newDocuments = validFiles.map((file, index) => {
-      const extension = file.name.split('.').pop().toUpperCase();
+    if (!validFiles.length) return;
 
-      return {
-        id: Date.now() + index,
-        name: file.name,
-        type: extension,
-        size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-        date: 'Just now',
-        color: 'purple'
-      };
-    });
+    setUploading(true);
 
-    setDocuments((previous) => [
-      ...newDocuments,
-      ...previous
-    ]);
+    try {
+      for (const file of validFiles) {
+        await uploadDocument(file);
+      }
 
-    setMessage(
-      `${newDocuments.length} document(s) added to your preview!`
-    );
+      await loadDocuments();
 
-    event.target.value = '';
+      setMessage(
+        `${validFiles.length} document(s) uploaded successfully!`
+      );
+    } catch (error) {
+      setMessage(error.message || 'Document upload failed.');
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const filteredDocuments = documents.filter((document) =>
+  const filteredDocuments = documents.filter(document =>
     document.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -160,12 +204,15 @@ function Dashboard() {
           <button
             className="primary-button"
             onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
           >
             <Upload size={18} />
-            Upload Document
+            {uploading ? 'Uploading...' : 'Upload Document'}
           </button>
 
           <input
+            id="dashboard-document-upload"
+            name="dashboardDocuments"
             ref={fileInputRef}
             type="file"
             accept=".pdf,.docx,.txt"
@@ -181,11 +228,13 @@ function Dashboard() {
 
         <div className="welcome-art">
           <div className="art-glow"></div>
+
           <div className="art-document">
             <div className="art-top">
               <div className="art-icon">
                 <FileText size={25} />
               </div>
+
               <Sparkles size={21} className="art-sparkle" />
             </div>
 
@@ -208,7 +257,10 @@ function Dashboard() {
         <div className="upload-message" role="status">
           <CheckCircle2 size={17} />
           {message}
-          <button onClick={() => setMessage('')}>×</button>
+
+          <button onClick={() => setMessage('')}>
+            ×
+          </button>
         </div>
       )}
 
@@ -221,11 +273,11 @@ function Dashboard() {
             <div className="stat-icon lavender-icon">
               <FileText size={20} />
             </div>
+
             <span className="stat-label">TOTAL DOCUMENTS</span>
           </div>
-
-          <h3>{documents.length}</h3>
-          <p>Documents in your workspace</p>
+<h3>{loading ? '—' : stats.totalDocuments}</h3>
+<p>Documents in your workspace</p>
         </div>
 
         <div className="stat-card">
@@ -233,11 +285,12 @@ function Dashboard() {
             <div className="stat-icon blue-icon">
               <MessageSquareText size={20} />
             </div>
+
             <span className="stat-label">AI CONVERSATIONS</span>
           </div>
 
-          <h3>12</h3>
-          <p>Questions explored so far</p>
+        <h3>{loading ? '—' : stats.aiConversations}</h3>
+<p>Total AI conversations</p>
         </div>
 
         <div className="stat-card">
@@ -245,55 +298,17 @@ function Dashboard() {
             <div className="stat-icon peach-icon">
               <BookOpen size={20} />
             </div>
+
             <span className="stat-label">STUDY SESSIONS</span>
           </div>
 
-          <h3>8</h3>
-          <p>Learning sessions completed</p>
+          <h3>{loading ? '—' : stats.studySessions}</h3>
+<p>Total study sessions</p>
         </div>
 
       </section>
 
-      {/* Quick Actions */}
-
-      <section className="dashboard-section">
-        <div className="section-heading">
-          <div>
-            <h3>What would you like to do?</h3>
-            <p>Pick up where you left off or start something new.</p>
-          </div>
-        </div>
-
-        <div className="quick-actions-grid">
-
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-
-            return (
-              <button
-                className="quick-action-card"
-                key={action.title}
-                onClick={() => {
-                  setMessage(`${action.title} will be available soon!`);
-                }}
-              >
-                <div className={`quick-icon ${action.color}`}>
-                  <Icon size={21} />
-                </div>
-
-                <div className="quick-action-text">
-                  <h4>{action.title}</h4>
-                  <p>{action.description}</p>
-                </div>
-
-                <ArrowUpRight size={19} className="quick-arrow" />
-              </button>
-            );
-          })}
-
-        </div>
-      </section>
-
+      
       {/* Recent Documents */}
 
       <section className="dashboard-section documents-section">
@@ -303,18 +318,14 @@ function Dashboard() {
             <h3>Recent Documents</h3>
             <p>Your recently added learning materials.</p>
           </div>
-
-          <button
-            className="text-button"
-            onClick={() => setMessage('My Documents page is coming soon!')}
-          >
-            View all <ArrowUpRight size={16} />
-          </button>
         </div>
 
         <div className="document-search">
           <Search size={17} />
+
           <input
+            id="dashboard-document-search"
+            name="dashboardSearch"
             type="text"
             placeholder="Search your documents..."
             value={searchTerm}
@@ -332,7 +343,11 @@ function Dashboard() {
             <span></span>
           </div>
 
-          {filteredDocuments.length > 0 ? (
+          {loading ? (
+            <div className="empty-documents">
+              Loading your documents...
+            </div>
+          ) : filteredDocuments.length > 0 ? (
             filteredDocuments.slice(0, 5).map((document) => {
               const Icon = getFileIcon(document.type);
 
@@ -362,8 +377,10 @@ function Dashboard() {
 
                   <button
                     className="more-button"
-                    aria-label={`More options for ${document.name}`}
-                    onClick={() => setMessage(document.name)}
+                    aria-label={`Document: ${document.name}`}
+                    onClick={() => {
+                      setMessage(`${document.name} is in your library.`);
+                    }}
                   >
                     <MoreHorizontal size={20} />
                   </button>
@@ -373,7 +390,9 @@ function Dashboard() {
             })
           ) : (
             <div className="empty-documents">
-              No documents found. Try another search.
+              {documents.length === 0
+                ? 'No documents uploaded yet. Upload your first document!'
+                : 'No documents found. Try another search.'}
             </div>
           )}
 
@@ -382,21 +401,7 @@ function Dashboard() {
 
       {/* Bottom Tip */}
 
-      <section className="dashboard-tip">
-        <div className="tip-icon">
-          <Sparkles size={20} />
-        </div>
-
-        <div>
-          <h4>A little tip for smarter learning</h4>
-          <p>
-            Upload your study material and ask DocuMind to
-            explain difficult topics in simple language.
-          </p>
-        </div>
-
-        <ArrowUpRight size={19} className="tip-arrow" />
-      </section>
+      
 
     </div>
   );

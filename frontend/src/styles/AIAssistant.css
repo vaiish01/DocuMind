@@ -299,3 +299,77 @@
     min-height: 550px;
   }
 }
+
+/* AI response loading indicator */
+
+.chat-typing {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #8973D5;
+}
+
+.chat-typing svg {
+  flex-shrink: 0;
+}
+
+.chat-input-area button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* Saved conversation history */
+
+.history-heading {
+  margin-top: 26px;
+}
+
+.conversation-history {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.conversation-history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  transition: background 0.2s ease;
+}
+
+.conversation-history-item:hover,
+.conversation-history-item.active {
+  background: #eeeafb;
+  color: #735ac2;
+}
+
+.conversation-history-item span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.conversation-history-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.history-empty {
+  padding: 8px 10px;
+  color: #89869a;
+  font-size: 12px;
+  line-height: 1.5;
+}

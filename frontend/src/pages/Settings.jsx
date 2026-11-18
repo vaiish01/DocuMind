@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import {
   User, Shield, Save, Mail, Sparkles
@@ -12,9 +12,35 @@ function Settings() {
   const [email, setEmail] = useState('student@example.com');
   const [message, setMessage] = useState('');
 
+  // Load saved profile details when the page opens
+  useEffect(() => {
+    const savedName = localStorage.getItem('documind-user-name');
+    const savedEmail = localStorage.getItem('documind-user-email');
+
+    if (savedName !== null) {
+      setName(savedName);
+    }
+
+    if (savedEmail !== null) {
+      setEmail(savedEmail);
+    }
+  }, []);
+
+  // Save profile details
   const saveSettings = (event) => {
     event.preventDefault();
-    setMessage('Your settings have been saved in this preview.');
+
+    localStorage.setItem('documind-user-name', name.trim());
+    localStorage.setItem('documind-user-email', email.trim());
+
+    setName(name.trim());
+    setEmail(email.trim());
+
+    setMessage('Your settings have been saved successfully!');
+    
+    setTimeout(() => {
+      setMessage('');
+    }, 3000);
   };
 
   return (
@@ -74,29 +100,55 @@ function Settings() {
           </label>
         </section>
 
-        {/* Account & Privacy */}
-        <section className="settings-card">
-          <div className="settings-title">
-            <div className="settings-icon">
-              <Shield size={20} />
-            </div>
-            <div>
-              <h3>Account & Privacy</h3>
-              <p>Manage your account security.</p>
-            </div>
-          </div>
+        
+{/* About DocuMind */}
+<section className="settings-card">
+  <div className="settings-title">
+    <div className="settings-icon">
+      <Sparkles size={20} />
+    </div>
+    <div>
+      <h3>About DocuMind</h3>
+      <p>Your personal document study assistant.</p>
+    </div>
+  </div>
 
-          <div className="privacy-info">
-            <Sparkles size={19} />
-            <div>
-              <strong>Personal workspace</strong>
-              <p>
-                Your account and document security settings will be
-                connected when authentication is implemented.
-              </p>
-            </div>
-          </div>
-        </section>
+  <div className="privacy-info">
+    <Sparkles size={19} />
+    <div>
+      <strong>Learn smarter with DocuMind</strong>
+      <p>
+        DocuMind is an AI-powered document intelligence and study
+        assistant designed to make learning easier and more effective.
+      </p>
+    </div>
+  </div>
+
+  <div className="settings-about-details">
+    <div>
+      <strong>What you can do</strong>
+      <p>Upload documents, ask questions, generate summaries,
+        create flashcards and test your knowledge with quizzes.</p>
+    </div>
+
+    <div>
+      <strong>Powered by AI</strong>
+      <p>Get quick insights and understand your study materials
+        through AI-powered assistance.</p>
+    </div>
+
+    <div>
+      <strong>Our goal</strong>
+      <p>Make studying simpler by turning lengthy documents
+        into easy-to-understand learning resources.</p>
+    </div>
+  </div>
+
+  <div className="settings-about-footer">
+    <span>DocuMind</span>
+    <span>AI-Powered Learning Assistant</span>
+  </div>
+</section>
 
         {message && (
           <p className="settings-success">{message}</p>
